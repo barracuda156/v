@@ -9,6 +9,7 @@ pub enum Arch {
 	rv32  // 32-bit risc-v
 	i386
 	s390x
+	ppc // 32-bit powerpc
 	js_node
 	js_browser
 	js_freestanding
@@ -51,6 +52,9 @@ pub fn arch_from_string(arch_str string) !Arch {
 		}
 		's390x' {
 			return .s390x
+		}
+		'ppc', 'powerpc', 'ppc32' { // ppc recommended
+			return .ppc
 		}
 		'js', 'js_node' {
 			return .js_node

@@ -154,6 +154,24 @@ static char __CLOSURE_GET_DATA_BYTES[] = {
 	0xB9, 0x04, 0x00, 0x24,		     // lgr  %r2, %r4
 	0x07, 0xFE,			     // br   %r14
 };
+#elif defined(__V_ppc)
+static char __closure_thunk[] = {
+	0x3D, 0x20, 0x00, 0x00,  // lis   r9, high16(userdata)
+	0x61, 0x29, 0x00, 0x00,  // ori   r9, r9, low16(userdata)
+	0x81, 0x29, 0x00, 0x00,  // lwz   r9, 0(r9)
+	0x3D, 0x20, 0x00, 0x00,  // lis   r10, high16(fn)
+	0x61, 0x4A, 0x00, 0x00,  // ori   r10, r10, low16(fn)
+	0x81, 0x4A, 0x00, 0x00,  // lwz   r10, 0(r10)
+	0x7D, 0x69, 0x03, 0xA6,  // mtctr r10
+	0x4E, 0x80, 0x04, 0x20,  // bctr
+};
+static char __CLOSURE_GET_DATA_BYTES[] = {
+	0x3D, 0x20, 0x00, 0x00,  // lis   r9, high16(userdata)
+	0x61, 0x29, 0x00, 0x00,  // ori   r9, r9, low16(userdata)
+	0x81, 0x29, 0x00, 0x00,  // lwz   r9, 0(r9)
+	0x7C, 0x08, 0x03, 0xA6,  // mtlr  r9
+	0x4E, 0x80, 0x00, 0x20,  // blr
+};
 #endif
 
 static void*(*__CLOSURE_GET_DATA)(void) = 0;
@@ -332,6 +350,12 @@ const c_common_macros = '
 	#define __V_s390x  1
 	#undef __V_architecture
 	#define __V_architecture 7
+#endif
+
+#if defined(__ppc__)
+	#define __V_ppc  1
+	#undef __V_architecture
+	#define __V_architecture 8
 #endif
 
 // Using just __GNUC__ for detecting gcc, is not reliable because other compilers define it too:
@@ -691,7 +715,7 @@ static void* g_live_info = NULL;
 
 const c_builtin_types = '
 //================================== builtin types ================================*/
-#if defined(__x86_64__) || defined(_M_AMD64) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64) || (defined(__riscv_xlen) && __riscv_xlen == 64) || defined(__s390x__)
+#if defined(__x86_64__) || defined(_M_AMD64) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64) || (defined(__riscv_xlen) && __riscv_xlen == 64) || defined(__s390x__) || defined(__ppc64__) || defined(__powerpc64__)
 typedef int64_t vint_t;
 #else
 typedef int32_t vint_t;
